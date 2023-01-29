@@ -1,0 +1,6 @@
+CREATE TABLE city
+(
+    id    BIGINT       NOT NULL PRIMARY KEY,
+    name  VARCHAR(128) NOT NULL,
+    photo VARCHAR(800) NOT NULL
+);
