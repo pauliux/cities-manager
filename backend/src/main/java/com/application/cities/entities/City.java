@@ -1,16 +1,25 @@
 package com.application.cities.entities;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
+import static jakarta.persistence.GenerationType.IDENTITY;
+
 @Entity
 @Getter
 @NoArgsConstructor
 public final class City {
+    public City(@NonNull String name, @NonNull String photo) {
+        this.name = name;
+        this.photo = photo;
+    }
+
     @Id
+    @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
     @NonNull

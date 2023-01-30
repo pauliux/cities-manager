@@ -1,12 +1,13 @@
 package com.application.cities.converters;
 
+import lombok.NonNull;
 import org.springframework.data.domain.Page;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class PageableConverter {
-    static public <T> Map<String, Object> convert(int pageNumber, int size, Page<T> page) {
+    public static <T> Map<String, Object> convert(@NonNull int pageNumber, @NonNull int size, @NonNull Page<T> page) {
         Map<String, Object> response = new HashMap<>();
         response.put("items", page.getContent());
         response.put("items_per_page", size);
