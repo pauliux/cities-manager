@@ -2,7 +2,7 @@
 
 ### OPTION 1 (easiest):
 
-Navigate to main folder (the one that contains `docker-compose.yml file`) in terminal and
+Navigate to main folder (the one that contains `docker-compose.yml` file) in terminal and
 run `docker-compose up --build` command. This will start both frontend and backend. Your
 application will be accessible in `localhost:3000`
 
