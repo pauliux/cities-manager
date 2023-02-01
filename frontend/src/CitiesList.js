@@ -27,12 +27,14 @@ export default function CitiesList() {
     const [itemPhoto, setItemPhoto] = React.useState("");
     const [error, setError] = React.useState("");
 
+    const API_PATH = process.env.REACT_APP_BACKEND_ENDPOINT || 'http://localhost:8080';
+
     useEffect(() => {
         fetchAllCities(page + 1, rowsPerPage)
     }, []);
 
     const fetchAllCities = (newPage, rowsPerPage) => {
-        fetch(`/api/v1/cities?page=${newPage}&per_page=${rowsPerPage}`)
+        fetch(API_PATH + `/api/v1/cities?page=${newPage}&per_page=${rowsPerPage}`)
             .then(response => response.json())
             .then(body => {
                 setCities(body.data.items);
@@ -41,7 +43,7 @@ export default function CitiesList() {
     };
 
     const fetchCitiesByName = (name, newPage, rowsPerPage) => {
-        fetch(`/api/v1/cities/${name}?page=${newPage}&per_page=${rowsPerPage}`)
+        fetch(API_PATH + `/api/v1/cities/${name}?page=${newPage}&per_page=${rowsPerPage}`)
             .then(response => response.json())
             .then(body => {
                 setCities(body.data.items);
@@ -104,7 +106,7 @@ export default function CitiesList() {
             )
         };
 
-        fetch('/api/v1/cities/' + id, requestOptions)
+        fetch(API_PATH + '/api/v1/cities/' + id, requestOptions)
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
