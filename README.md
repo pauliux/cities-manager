@@ -1,5 +1,13 @@
 ## In order to run this project you need to:
 
+### OPTION 1 (easiest):
+
+Navigate to main folder (the one that contains `docker-compose.yml file`) in terminal and
+run `docker-compose up --build` command. This will start both frontend and backend. Your
+application will be accessible in `localhost:3000`
+
+### OPTION 2:
+
 1. Start backend:
     1. You need to navigate to `\backend\src\main\java\com\application\cities\CitiesApplication.java`
     2. run `main` method in `CitiesApplication.java` class. By doing this, the backend application will:
