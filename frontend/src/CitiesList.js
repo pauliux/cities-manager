@@ -2,7 +2,19 @@ import React, {useEffect} from 'react';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
-import {Paper, TablePagination} from "@mui/material";
+import {Paper, TablePagination, TextField} from "@mui/material";
+import IconButton from '@mui/material/IconButton';
+import EditIcon from '@mui/icons-material/Edit';
+import Alert from '@mui/material/Alert';
+import {Button} from "reactstrap";
+import ClearIcon from '@mui/icons-material/Clear';
+import imageNotFound from './image-not-found.jpg';
+
+const editButtonStyle = {
+    backgroundColor: 'white',
+    borderRadius: '50%',
+    margin: 5
+}
 
 export default function CitiesList() {
     const [page, setPage] = React.useState(0);
@@ -10,6 +22,10 @@ export default function CitiesList() {
     const [cities, setCities] = React.useState([]);
     const [totalItems, setTotalItems] = React.useState(0);
     const [searchTerm, setSearchTerm] = React.useState('');
+    const [editId, setEditId] = React.useState(null);
+    const [itemName, setItemName] = React.useState("");
+    const [itemPhoto, setItemPhoto] = React.useState("");
+    const [error, setError] = React.useState("");
 
     useEffect(() => {
         fetchAllCities(page + 1, rowsPerPage)
@@ -62,37 +78,160 @@ export default function CitiesList() {
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        fetchCitiesByName(searchTerm, page + 1, rowsPerPage);
+        if (searchTerm) {
+            fetchCitiesByName(searchTerm, page + 1, rowsPerPage);
+        }
+    };
+
+    const handleEdit = (id) => {
+        setError("");
+        const selectedCity = cities.find(city => city.id === id);
+        setEditId(id);
+        setItemName(selectedCity.name);
+        setItemPhoto(selectedCity.photo);
+    };
+
+    const handleSave = (id) => {
+        const requestOptions = {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(
+                {
+                    id: id,
+                    name: itemName,
+                    photo: itemPhoto
+                }
+            )
+        };
+
+        fetch('/api/v1/cities/' + id, requestOptions)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    setError(data.error);
+                } else {
+                    setError("");
+                    const updatedCities = cities.map(city => {
+                        if (city.id === id) {
+                            return {...city, name: data.name, photo: data.photo, errorOccurred: null};
+                        }
+                        return city;
+                    });
+                    setCities(updatedCities);
+                    setEditId(null);
+                }
+            });
+    };
+
+    const handleCancel = () => {
+        setEditId(null);
+        setItemName("");
+        setItemPhoto("");
     };
 
     return (
-        <Paper>
+        <Paper style={{marginTop: 20}}>
             <form onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={handleSearch}
-                    placeholder="Search by city name"
-                />
-                <button type="submit">Search</button>
-                {searchTerm !== "" && (
-                    <button type="button" onClick={clearSearch}>
-                        Clear
-                    </button>
-                )}
+                <div style={{margin: 5, display: 'flex', justifyContent: 'space-between'}}>
+                    <TextField
+                        label="Search by city name"
+                        type="text"
+                        value={searchTerm}
+                        onChange={handleSearch}
+                        className="search-field"
+                        fullWidth
+                        InputProps={{
+                            endAdornment: (
+                                <IconButton
+                                    sx={{visibility: searchTerm ? "visible" : "hidden"}}
+                                    onClick={clearSearch}
+                                >
+                                    <ClearIcon/>
+                                </IconButton>
+                            ),
+                        }}
+                    />
+                    <div>
+                        <Button variant="contained" color="primary" type="submit"
+                                style={{marginLeft: 5, height: '100%', minWidth: 150}}>
+                            Search
+                        </Button>
+                    </div>
+                </div>
             </form>
             <ImageList>
                 {cities.map((item) => (
                     <ImageListItem key={item.img} style={{margin: 5}}>
                         <img
-                            src={item.photo}
-                            srcSet={item.photo}
+                            src={item.errorOccurred ? imageNotFound : item.photo}
+                            srcSet={item.errorOccurred ? imageNotFound : item.photo}
                             alt={item.name}
                             loading="lazy"
+                            onError={() => {
+                                item.errorOccurred = true;
+                                const updatedCities = cities.map(city => {
+                                    if (city.id === item.id) {
+                                        return item;
+                                    }
+                                    return city;
+                                });
+                                setCities(updatedCities);
+                            }}
                         />
                         <ImageListItemBar
-                            title={item.name}
+                            title={
+                                editId === item.id ? (
+                                    <>
+                                        <div>
+                                            <input
+                                                type="text"
+                                                value={itemName}
+                                                onChange={e => setItemName(e.target.value)}
+                                                onKeyDown={e => {
+                                                    if (e.key === 'Enter') {
+                                                        handleSave(item.id);
+                                                    }
+                                                }}
+                                            />
+
+                                            <Button variant="contained" color="primary"
+                                                    onClick={() => handleSave(item.id)}
+                                                    style={{marginLeft: 5, marginRight: 5}}>
+                                                Save
+                                            </Button>
+                                            <Button variant="contained" onClick={handleCancel}>
+                                                Cancel
+                                            </Button>
+                                        </div>
+                                        <div style={{paddingTop: 5}}>
+                                            <input style={{width: "100%"}}
+                                                   type="text"
+                                                   value={itemPhoto}
+                                                   onChange={e => setItemPhoto(e.target.value)}
+                                                   onKeyDown={e => {
+                                                       if (e.key === 'Enter') {
+                                                           handleSave(item.id);
+                                                       }
+                                                   }}
+                                            />
+                                        </div>
+                                        <div>
+                                            {error && <Alert severity="error">{error}</Alert>}
+                                        </div>
+
+                                    </>
+                                ) : (
+                                    item.name
+                                )
+                            }
                             position="top"
+                            actionIcon={
+                                editId !== item.id ? (
+                                    <IconButton style={editButtonStyle} onClick={() => handleEdit(item.id)}>
+                                        <EditIcon style={{color: 'black'}}/>
+                                    </IconButton>
+                                ) : null
+                            }
                         />
                     </ImageListItem>
                 ))}
