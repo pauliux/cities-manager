@@ -7,6 +7,8 @@ services:
       - "3000:3000" # Bind port 3000 of host to 3000 of container
     container_name: frontend-docker
     restart: always # What to do if container crashes
+    environment:
+      - REACT_APP_BACKEND_ENDPOINT=${BACKEND_ENDPOINT}
     links:
       - backend
   # Create backend container
